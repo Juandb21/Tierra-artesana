@@ -54,6 +54,30 @@
             align-items: center;
         }
 
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .nav-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
         nav a {
             color: white;
             text-decoration: none;
@@ -479,26 +503,53 @@
             }
 
             .header-container {
-                flex-wrap: wrap;
-                gap: 15px;
+                flex-wrap: nowrap;
+                gap: 12px;
+                align-items: center;
             }
 
             .logo {
                 font-size: 20px;
-                width: 100%;
-                text-align: center;
+                flex: 1;
+                min-width: 0;
             }
 
             nav {
+                display: none;
+                width: 100%;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #C85A17 0%, #A84910 100%);
+                padding: 14px 20px 18px;
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+            }
+
+            nav.is-open {
+                display: flex;
+            }
+
+            .nav-links {
                 width: 100%;
                 flex-direction: column;
-                gap: 8px;
-                align-items: center;
-                order: 3;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .nav-toggle {
+                display: inline-flex;
+                flex-shrink: 0;
             }
 
             nav a {
                 font-size: 14px;
+                padding: 10px 12px;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.08);
             }
 
             .auth-buttons {
@@ -510,6 +561,10 @@
             .auth-buttons .btn {
                 width: 100%;
                 padding: 8px 15px;
+            }
+
+            .header-container {
+                position: relative;
             }
 
             .carousel {
@@ -689,11 +744,14 @@
     <header>
         <div class="header-container">
             <a href="/" class="logo"><i class="fas fa-leaf"></i> Tierra artesana</a>
+            <button type="button" class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
             <nav>
-                {% if user.is_authenticated %}
-                    {% if user.is_staff or user.is_superuser %}
-                        <!-- Menú Administrativo -->
-                        <div style="display: flex; gap: 20px; align-items: center;">
+                <div class="nav-links">
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff or user.is_superuser %}
+                            <!-- Menú Administrativo -->
                             <a href="/dashboard/">
                                 <i class="fas fa-chart-line"></i> Dashboard
                             </a>
@@ -706,28 +764,28 @@
                             <a href="/dashboard/facturas/">
                                 <i class="fas fa-receipt"></i> Facturas
                             </a>
-                        </div>
-                    {% else %}
-                        <!-- Menú Cliente -->
-                        <a href="/"><i class="fas fa-house"></i> Inicio</a>
-                        <a href="/?solo_productos=true"><i class="fas fa-box-open"></i> Productos</a>
-                        <a href="/historial-pedidos/">
-                            <i class="fas fa-shopping-bag"></i> Pedidos
-                        </a>
-                        <a href="/carrito/">
-                            <i class="fas fa-shopping-cart"></i> Carrito
-                        </a>
-                    {% endif %}
+                        {% else %}
+                            <!-- Menú Cliente -->
+                            <a href="/"><i class="fas fa-house"></i> Inicio</a>
+                            <a href="/?solo_productos=true"><i class="fas fa-box-open"></i> Productos</a>
+                            <a href="/historial-pedidos/">
+                                <i class="fas fa-shopping-bag"></i> Pedidos
+                            </a>
+                            <a href="/carrito/">
+                                <i class="fas fa-shopping-cart"></i> Carrito
+                            </a>
+                        {% endif %}
 
-                    <a href="/cerrar-sesion/">
-                        <i class="fas fa-sign-out-alt"></i> Salir
-                    </a>
-                {% else %}
-                    <div class="auth-buttons">
-                        <a href="/iniciar-sesion/" class="btn">Iniciar Sesión</a>
-                        <a href="/registrarse/" class="btn btn-white">Registrarse</a>
-                    </div>
-                {% endif %}
+                        <a href="/cerrar-sesion/">
+                            <i class="fas fa-sign-out-alt"></i> Salir
+                        </a>
+                    {% else %}
+                        <div class="auth-buttons">
+                            <a href="/iniciar-sesion/" class="btn">Iniciar Sesión</a>
+                            <a href="/registrarse/" class="btn btn-white">Registrarse</a>
+                        </div>
+                    {% endif %}
+                </div>
             </nav>
         </div>
     </header>
@@ -753,6 +811,38 @@
     <footer>
         <p>&copy; 2026 Tierra Artesana. Cerámica Artesanal Hecha a Mano. Todos los derechos reservados.</p>
     </footer>
+
+    <script>
+        (function () {
+            const navToggle = document.getElementById('navToggle');
+            const nav = document.querySelector('header nav');
+
+            if (!navToggle || !nav) {
+                return;
+            }
+
+            navToggle.addEventListener('click', function () {
+                const isOpen = nav.classList.toggle('is-open');
+                navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            nav.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', function () {
+                    if (window.innerWidth <= 768) {
+                        nav.classList.remove('is-open');
+                        navToggle.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
+
+            window.addEventListener('resize', function () {
+                if (window.innerWidth > 768) {
+                    nav.classList.remove('is-open');
+                    navToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+        })();
+    </script>
 
     {% block extra_scripts %}{% endblock %}
 </body>
