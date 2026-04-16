@@ -1,0 +1,264 @@
+{% extends "tienda/base.html" %}
+
+{% block title %}Procesar Compra - Tierra Artesana{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .checkout-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .checkout-form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .checkout-form h3 {
+            color: #C85A17;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #C85A17;
+            padding-bottom: 10px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #C85A17;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        .submit-btn:hover {
+            background-color: #B04D10;
+        }
+
+        .submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-container {
+                gap: 20px;
+            }
+
+            .checkout-form {
+                padding: 20px;
+            }
+
+            .checkout-form h3 {
+                font-size: 18px;
+            }
+
+            .submit-btn {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .checkout-container {
+                margin: 20px 0;
+            }
+
+            .checkout-form {
+                padding: 15px;
+            }
+
+            .form-section {
+                margin-bottom: 20px;
+            }
+
+            .checkout-form h3 {
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+
+            .form-group label {
+                font-size: 13px;
+            }
+
+            .form-group input, .form-group textarea, .form-group select {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            .submit-btn {
+                padding: 12px;
+                font-size: 13px;
+                margin-top: 15px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h2 class="section-title">Procesar Compra</h2>
+
+    {% if items %}
+        <div class="checkout-container">
+            <form method="post" class="checkout-form" id="checkoutForm">
+                {% csrf_token %}
+                
+                <div class="form-section">
+                    <h3>Ubicación del Pedido</h3>
+
+                    <div class="form-group">
+                        <label for="ubicacion_guardada">Ubicaciones guardadas (opcional)</label>
+                        <select id="ubicacion_guardada" name="ubicacion_guardada" onchange="aplicarUbicacionGuardada()">
+                            <option value="">Seleccionar ubicación guardada</option>
+                            {% for ubicacion in ubicaciones_guardadas %}
+                                <option
+                                    value="{{ ubicacion.id }}"
+                                    data-departamento="{{ ubicacion.municipio.departamento.id }}"
+                                    data-municipio="{{ ubicacion.municipio.id }}"
+                                    data-direccion="{{ ubicacion.direccion|escape }}"
+                                >
+                                    {{ ubicacion.municipio.nombre }}, {{ ubicacion.municipio.departamento.nombre }} - {{ ubicacion.direccion|truncatechars:50 }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="departamento">Departamento *</label>
+                            <select id="departamento" name="departamento" required onchange="cargarMunicipios()">
+                                <option value="">Selecciona un departamento</option>
+                                {% for dept in departamentos %}
+                                    <option value="{{ dept.id }}">{{ dept.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="municipio">Municipio *</label>
+                            <select id="municipio" name="municipio" required onchange="actualizarEstadoBoton()">
+                                <option value="">Selecciona un municipio</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="direccion">Referencia o dirección *</label>
+                        <textarea id="direccion" name="direccion" placeholder="Escribe una referencia o dirección del pedido..." required></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">Confirmar Pedido</button>
+            </form>
+
+
+        </div>
+
+        <script>
+            function cargarMunicipios(municipioPreseleccionado = '') {
+                const departamentoId = document.getElementById('departamento').value;
+                const municipioSelect = document.getElementById('municipio');
+
+                if (!departamentoId) {
+                    municipioSelect.innerHTML = '<option value="">Selecciona un municipio</option>';
+                    actualizarEstadoBoton();
+                    return;
+                }
+
+                const baseUrl = "{% url 'obtener_municipios' 0 %}";
+                const url = baseUrl.replace('/0/', `/${departamentoId}/`);
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('No se pudo cargar la lista de municipios');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        municipioSelect.innerHTML = '<option value="">Selecciona un municipio</option>';
+
+                        if (!Array.isArray(data) || data.length === 0) {
+                            municipioSelect.innerHTML = '<option value="">No hay municipios disponibles</option>';
+                            actualizarEstadoBoton();
+                            return;
+                        }
+
+                        data.forEach(municipio => {
+                            const option = document.createElement('option');
+                            option.value = municipio.id;
+                            option.textContent = municipio.nombre;
+                            if (String(municipio.id) === String(municipioPreseleccionado)) {
+                                option.selected = true;
+                            }
+                            municipioSelect.appendChild(option);
+                        });
+
+                        actualizarEstadoBoton();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        municipioSelect.innerHTML = '<option value="">Error al cargar municipios</option>';
+                        actualizarEstadoBoton();
+                    });
+            }
+
+            function aplicarUbicacionGuardada() {
+                const savedSelect = document.getElementById('ubicacion_guardada');
+                const selected = savedSelect.options[savedSelect.selectedIndex];
+
+                if (!savedSelect.value) {
+                    return;
+                }
+
+                const departamentoId = selected.dataset.departamento;
+                const municipioId = selected.dataset.municipio;
+                const direccion = selected.dataset.direccion || '';
+
+                const departamentoSelect = document.getElementById('departamento');
+                const direccionInput = document.getElementById('direccion');
+
+                departamentoSelect.value = departamentoId;
+                direccionInput.value = direccion;
+                cargarMunicipios(municipioId);
+            }
+
+            function actualizarEstadoBoton() {
+                const municipioSelect = document.getElementById('municipio');
+                document.getElementById('submitBtn').disabled = !municipioSelect.value;
+            }
+
+            actualizarEstadoBoton();
+        </script>
+    {% else %}
+        <div style="text-align: center; padding: 40px; background: white; border-radius: 8px; margin: 40px 0;">
+            <p style="color: #999; margin-bottom: 20px;">Tu carrito está vacío</p>
+            <a href="/" class="btn">Seguir Comprando</a>
+        </div>
+    {% endif %}
+{% endblock %}

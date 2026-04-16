@@ -1,0 +1,154 @@
+{% extends "tienda/base.html" %}
+
+{% block title %}Eliminar Producto - Tierra Artesana{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .admin-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .alert-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-icon {
+            font-size: 48px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+
+        .alert-message {
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .product-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .product-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .product-info p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="admin-container">
+        <a href="{% url 'productos_lista' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
+
+        <div class="page-header">
+            <h1><i class="fas fa-trash"></i> Eliminar Producto</h1>
+        </div>
+
+        <div class="alert-container">
+            <div class="alert-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+
+            <div class="alert-message">
+                <strong>¿Estás seguro de que deseas eliminar este producto?</strong>
+                <p>Esta acción es irreversible. Una vez eliminado, el producto no podrá ser recuperado.</p>
+            </div>
+
+            <div class="product-info">
+                <h3>Información del Producto</h3>
+                <p><strong>Nombre:</strong> {{ producto.nombre }}</p>
+                <p><strong>Precio:</strong> ${{ producto.precio }}</p>
+                <p><strong>Stock:</strong> {{ producto.cantidad_disponible }} unidades</p>
+                {% if producto.categoria %}
+                    <p><strong>Categoría:</strong> {{ producto.categoria.nombre }}</p>
+                {% endif %}
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="button-group">
+                    <a href="{% url 'productos_lista' %}" class="btn-cancel"><i class="fas fa-times"></i> Cancelar</a>
+                    <button type="submit" class="btn-delete"><i class="fas fa-trash"></i> Eliminar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

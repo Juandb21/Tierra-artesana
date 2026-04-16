@@ -1,0 +1,241 @@
+{% extends "tienda/base.html" %}
+
+{% block title %}Ver Facturas - Tierra Artesana{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .filter-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-row input,
+        .filter-row select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .filter-row button {
+            background-color: #C85A17;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .filter-row button:hover {
+            background-color: #B04D10;
+        }
+
+        .invoices-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #f5f1e8;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pendiente {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-en_transporte {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-entregado {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelado {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-edit {
+            background-color: #0066cc;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-edit:hover {
+            background-color: #0052a3;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="admin-container">
+        <a href="{% url 'dashboard' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
+
+        <div class="page-header">
+            <h1><i class="fas fa-receipt"></i> Gestionar Facturas</h1>
+        </div>
+
+        <div class="filter-container">
+            <form method="GET" class="filter-row">
+                <input type="text" name="cliente" placeholder="Buscar por nombre o email..." value="{{ cliente_nombre }}">
+                <input type="date" name="fecha_desde" value="{{ fecha_desde }}">
+                <input type="date" name="fecha_hasta" value="{{ fecha_hasta }}">
+                <button type="submit"><i class="fas fa-search"></i> Filtrar</button>
+            </form>
+        </div>
+
+        {% if facturas %}
+            <div class="invoices-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Número de Factura</th>
+                            <th>Cliente</th>
+                            <th>Monto</th>
+                            <th>Descuento</th>
+                            <th>Total</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for factura in facturas %}
+                            <tr>
+                                <td>#{{ factura.numero_pedido }}</td>
+                                <td>{{ factura.cliente.user.get_full_name }}</td>
+                                <td>${{ factura.total|add:factura.descuento|floatformat:0 }}</td>
+                                <td>${{ factura.descuento|floatformat:0 }}</td>
+                                <td><strong>${{ factura.total|floatformat:0 }}</strong></td>
+                                <td>{{ factura.fecha_pedido|date:"d/m/Y" }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ factura.estado }}">
+                                        {{ factura.get_estado_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="actions">
+                                        <a href="{% url 'facturas_editar' factura.id %}" class="btn-edit">
+                                            <i class="fas fa-eye"></i> Ver
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="invoices-table">
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No hay facturas</h3>
+                    <p>No se encontraron facturas con los criterios de búsqueda</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

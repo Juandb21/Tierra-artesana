@@ -1,0 +1,243 @@
+{% extends "tienda/base.html" %}
+
+{% block title %}Gestionar Productos - Tierra Artesana{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            color: #333;
+        }
+
+        .btn-primary {
+            background-color: #C85A17;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #B04D10;
+        }
+
+        .products-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #f5f1e8;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-edit, .btn-delete, .btn-back {
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            background-color: #0066cc;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background-color: #0052a3;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .stock-breakdown {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .stock-chip {
+            display: inline-block;
+            background: #f5f1e8;
+            border-radius: 999px;
+            padding: 2px 8px;
+            margin: 2px 4px 0 0;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="admin-container">
+        <a href="{% url 'dashboard' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
+
+        <div class="page-header">
+            <h1><i class="fas fa-boxes"></i> Gestionar Productos</h1>
+            <a href="{% url 'productos_crear' %}" class="btn-primary">
+                <i class="fas fa-plus"></i> Crear Producto
+            </a>
+        </div>
+
+        {% if productos %}
+            <div class="products-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Categoría</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                            <tr>
+                                <td class="product-name">{{ producto.nombre }}</td>
+                                <td>${{ producto.precio|floatformat:0 }}</td>
+                                <td>
+                                    {{ producto.cantidad_disponible }}
+                                    {% if producto.tallas_con_stock %}
+                                        <div class="stock-breakdown">
+                                            {% for item in producto.tallas_con_stock %}
+                                                <span class="stock-chip">{{ item.tamano }}: {{ item.stock|default:0 }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>{{ producto.categoria.nombre|default:"Sin categoría" }}</td>
+                                <td>
+                                    <span class="status-badge {% if producto.activo %}status-active{% else %}status-inactive{% endif %}">
+                                        {% if producto.activo %}Activo{% else %}Inactivo{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="actions">
+                                        <a href="{% url 'productos_editar' producto.id %}" class="btn-edit">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </a>
+                                        <a href="{% url 'productos_eliminar' producto.id %}" class="btn-delete">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="products-table">
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No hay productos</h3>
+                    <p>Comienza creando tu primer producto</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

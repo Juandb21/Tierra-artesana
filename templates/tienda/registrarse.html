@@ -1,0 +1,270 @@
+{% extends "tienda/base.html" %}
+
+{% block title %}Registrarse - Tierra Artesana{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .terms-row {
+            margin-top: 15px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .terms-row label {
+            display: inline;
+            margin-left: 8px;
+            line-height: 1.5;
+        }
+
+        .terms-link {
+            color: #C85A17;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px dashed #C85A17;
+            cursor: pointer;
+        }
+
+        .terms-link:hover {
+            color: #B04D10;
+            border-bottom-color: #B04D10;
+        }
+
+        .terms-modal {
+            display: none;
+            position: fixed;
+            z-index: 1200;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .terms-modal.show {
+            display: flex;
+        }
+
+        .terms-modal-content {
+            width: 100%;
+            max-width: 760px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+
+        .terms-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: #F8EFE6;
+            border-bottom: 1px solid #E3D3C4;
+        }
+
+        .terms-modal-header h3 {
+            margin: 0;
+            color: #8F3D0D;
+            font-size: 20px;
+        }
+
+        .terms-close {
+            border: none;
+            background: transparent;
+            font-size: 26px;
+            line-height: 1;
+            color: #8F3D0D;
+            cursor: pointer;
+        }
+
+        .terms-body {
+            max-height: 50vh;
+            overflow-y: auto;
+            padding: 18px 20px;
+            color: #2f2f2f;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .terms-body h4 {
+            color: #8F3D0D;
+            margin: 14px 0 6px;
+            font-size: 15px;
+        }
+
+        .terms-body ul {
+            margin: 6px 0 10px 20px;
+        }
+
+        .terms-modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border-top: 1px solid #eee;
+            background: #fff;
+        }
+
+        .terms-read-hint {
+            color: #777;
+            font-size: 12px;
+        }
+
+        .btn-terms-accept {
+            background: #C85A17;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-terms-accept:disabled {
+            background: #c9b2a1;
+            cursor: not-allowed;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="form-container">
+        <h2>Tierra artesana</h2>
+        <p class="form-subtitle">Crea tu cuenta para comenzar</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="nombre_completo">Nombre completo</label>
+                <input type="text" id="nombre_completo" name="nombre_completo" placeholder="Tu nombre" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" name="email" placeholder="tu@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="contraseña">Contraseña</label>
+                <input type="password" id="contraseña" name="contraseña" placeholder="••••••••" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label for="confirmar_contraseña">Confirmar contraseña</label>
+                <input type="password" id="confirmar_contraseña" name="confirmar_contraseña" placeholder="••••••••" required minlength="6">
+            </div>
+
+            <div class="terms-row">
+                <input type="checkbox" id="acepta_terminos" name="acepta_terminos" required>
+                <label for="acepta_terminos">
+                    Acepto los
+                    <a href="#" class="terms-link" id="openTerms">Términos y Condiciones</a>
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">Registrarse</button>
+            </div>
+
+            <p class="form-link">¿Ya tienes cuenta? <a href="/iniciar-sesion/">Inicia sesión aquí</a></p>
+        </form>
+    </div>
+
+    <div class="terms-modal" id="termsModal" aria-hidden="true">
+        <div class="terms-modal-content" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+            <div class="terms-modal-header">
+                <h3 id="termsTitle">Términos y Condiciones de Compra</h3>
+                <button type="button" class="terms-close" id="closeTerms" aria-label="Cerrar">&times;</button>
+            </div>
+
+            <div class="terms-body" id="termsBody">
+                <h4>1. Aceptación del servicio</h4>
+                <p>Al registrarte en Tierra artesana aceptas nuestras políticas de compra, pago, entrega y atención al cliente.</p>
+
+                <h4>2. Entrega y disponibilidad</h4>
+                <ul>
+                    <li>La disponibilidad final del pedido se confirma al momento del pago.</li>
+                    <li>Los tiempos de entrega o retiro son estimados y pueden variar por operación interna.</li>
+                </ul>
+
+                <h4>3. Dirección y datos de entrega</h4>
+                <ul>
+                    <li>Debes ingresar datos reales y completos de contacto y dirección.</li>
+                    <li>Si la dirección es incorrecta o incompleta, la entrega puede retrasarse o requerir costos adicionales.</li>
+                </ul>
+
+                <h4>4. Pagos</h4>
+                <ul>
+                    <li>Los métodos de pago habilitados se muestran al finalizar la compra.</li>
+                    <li>La confirmación del pedido está sujeta a validación del pago cuando aplique.</li>
+                </ul>
+
+                <h4>5. Devoluciones y novedades</h4>
+                <ul>
+                    <li>Si el producto llega con novedad, debes reportarlo por los canales de soporte en el menor tiempo posible.</li>
+                    <li>Cada caso se evalúa conforme a la normatividad colombiana de protección al consumidor.</li>
+                </ul>
+
+                <h4>6. Protección de datos</h4>
+                <p>Autorizas el tratamiento de tus datos personales para gestionar pedidos y comunicaciones relacionadas con el servicio.</p>
+
+                <h4>7. Modificaciones</h4>
+                <p>Tierra artesana puede actualizar estos términos cuando sea necesario. Las nuevas condiciones se publicarán en la plataforma.</p>
+            </div>
+
+            <div class="terms-modal-footer">
+                <span class="terms-read-hint" id="termsReadHint">Desplázate hasta el final para habilitar la aceptación.</span>
+                <button type="button" class="btn-terms-accept" id="acceptTermsBtn" disabled>He leído y acepto</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const termsModal = document.getElementById('termsModal');
+        const openTerms = document.getElementById('openTerms');
+        const closeTerms = document.getElementById('closeTerms');
+        const termsBody = document.getElementById('termsBody');
+        const acceptTermsBtn = document.getElementById('acceptTermsBtn');
+        const acceptTermsCheckbox = document.getElementById('acepta_terminos');
+        const termsReadHint = document.getElementById('termsReadHint');
+
+        function abrirModalTerminos(event) {
+            event.preventDefault();
+            termsModal.classList.add('show');
+            termsModal.setAttribute('aria-hidden', 'false');
+            termsBody.scrollTop = 0;
+            acceptTermsBtn.disabled = true;
+            termsReadHint.textContent = 'Desplázate hasta el final para habilitar la aceptación.';
+        }
+
+        function cerrarModalTerminos() {
+            termsModal.classList.remove('show');
+            termsModal.setAttribute('aria-hidden', 'true');
+        }
+
+        function habilitarAceptacionSiLeyoTodo() {
+            const llegoAlFinal = termsBody.scrollTop + termsBody.clientHeight >= termsBody.scrollHeight - 5;
+            if (llegoAlFinal) {
+                acceptTermsBtn.disabled = false;
+                termsReadHint.textContent = 'Listo. Ya puedes aceptar los términos.';
+            }
+        }
+
+        openTerms.addEventListener('click', abrirModalTerminos);
+        closeTerms.addEventListener('click', cerrarModalTerminos);
+        termsBody.addEventListener('scroll', habilitarAceptacionSiLeyoTodo);
+
+        acceptTermsBtn.addEventListener('click', function() {
+            acceptTermsCheckbox.checked = true;
+            cerrarModalTerminos();
+        });
+
+        termsModal.addEventListener('click', function(event) {
+            if (event.target === termsModal) {
+                cerrarModalTerminos();
+            }
+        });
+    </script>
+{% endblock %}

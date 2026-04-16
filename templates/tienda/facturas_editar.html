@@ -1,0 +1,286 @@
+{% extends "tienda/base.html" %}
+
+{% block title %}Ver Factura - Tierra Artesana{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .admin-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .factura-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border-left: 4px solid #C85A17;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item p {
+            margin: 5px 0;
+            color: #333;
+        }
+
+        .info-item strong {
+            color: #333;
+        }
+
+        .items-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .items-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items-table th {
+            background-color: #f5f1e8;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #C85A17;
+            box-shadow: 0 0 0 3px rgba(200, 90, 23, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .summary {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .summary p {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .summary strong {
+            color: #333;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .btn-submit {
+            background-color: #C85A17;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #B04D10;
+        }
+
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background-color: #5a6268;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="admin-container">
+        <a href="{% url 'facturas_lista' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
+
+        <div class="page-header">
+            <h1><i class="fas fa-eye"></i> Ver Factura</h1>
+        </div>
+
+        <!-- Información de la Factura -->
+        <div class="factura-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <p><strong>Número de Factura:</strong></p>
+                    <p>#{{ factura.numero_pedido }}</p>
+                </div>
+                <div class="info-item">
+                    <p><strong>Cliente:</strong></p>
+                    <p>{{ factura.cliente.user.get_full_name }}</p>
+                </div>
+                <div class="info-item">
+                    <p><strong>Email:</strong></p>
+                    <p>{{ factura.cliente.user.email }}</p>
+                </div>
+                <div class="info-item">
+                    <p><strong>Fecha:</strong></p>
+                    <p>{{ factura.fecha_pedido|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ítems de la Factura -->
+        <div class="items-section">
+            <h3>Ítems</h3>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in factura.detalles.all %}
+                        <tr>
+                            <td>{{ item.producto.nombre }}</td>
+                            <td>{{ item.cantidad }}</td>
+                            <td>${{ item.precio_unitario|floatformat:0 }}</td>
+                            <td>${{ item.subtotal|floatformat:0 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #888;">No hay ítems registrados en esta factura.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Resumen de la Factura (solo lectura) -->
+        <div class="form-container">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Descuento</label>
+                    <input type="text" value="${{ factura.descuento|floatformat:0 }}" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Total</label>
+                    <input type="text" value="${{ factura.total|floatformat:0 }}" disabled>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Notas</label>
+                <textarea disabled>{{ factura.notas|default:'Sin notas' }}</textarea>
+            </div>
+
+            <div class="summary">
+                <p><strong>Subtotal:</strong> <span>${{ factura.total|add:factura.descuento|floatformat:0 }}</span></p>
+                <p><strong>Descuento:</strong> <span>-${{ factura.descuento|floatformat:0 }}</span></p>
+                <p style="font-size: 16px; border-top: 1px solid #ddd; padding-top: 10px;"><strong>Total:</strong> <span style="color: #C85A17;">${{ factura.total|floatformat:0 }}</span></p>
+            </div>
+
+            <div class="button-group">
+                <a href="{% url 'facturas_lista' %}" class="btn-cancel">Volver</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

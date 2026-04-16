@@ -1,0 +1,29 @@
+{% extends "tienda/base.html" %}
+
+{% block title %}Iniciar Sesión - Tierra Artesana{% endblock %}
+
+{% block content %}
+    <div class="form-container">
+        <h2>Tierra artesana</h2>
+        <p class="form-subtitle">Inicia sesión para continuar</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" name="email" placeholder="tu@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="contraseña">Contraseña</label>
+                <input type="password" id="contraseña" name="contraseña" placeholder="••••••••" required>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">Iniciar Sesión</button>
+            </div>
+
+            <p class="form-link">¿No tienes cuenta? <a href="/registrarse/">Regístrate aquí</a></p>
+        </form>
+    </div>
+{% endblock %}

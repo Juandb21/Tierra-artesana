@@ -1,0 +1,439 @@
+{% extends 'tienda/base.html' %}
+
+{% block title %}Factura - {{ pedido.numero_pedido }}{% endblock %}
+
+{% block content %}
+<style>
+    .factura-container {
+        max-width: 900px;
+        margin: 40px auto;
+        background: white;
+        padding: 0;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    .factura-header {
+        background: linear-gradient(135deg, #C85A17 0%, #A84910 100%);
+        color: white;
+        padding: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .factura-header-left h1 {
+        font-size: 28px;
+        margin: 0;
+        font-weight: bold;
+    }
+
+    .factura-header-left p {
+        margin: 5px 0 0 0;
+        font-size: 14px;
+        opacity: 0.95;
+    }
+
+    .factura-header-right {
+        text-align: right;
+    }
+
+    .factura-badge {
+        font-size: 36px;
+        font-weight: bold;
+        opacity: 0.8;
+    }
+
+    .factura-content {
+        padding: 30px;
+    }
+
+    .factura-info-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-bottom: 30px;
+    }
+
+    .factura-info-section {
+        border-bottom: 1px solid #E0E0E0;
+        padding-bottom: 15px;
+    }
+
+    .factura-info-title {
+        color: #C85A17;
+        font-weight: bold;
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+    }
+
+    .factura-info-data {
+        font-size: 14px;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .factura-info-data strong {
+        font-weight: 600;
+    }
+
+    .numero-factura {
+        font-size: 18px;
+        color: #C85A17;
+        font-weight: bold;
+    }
+
+    .fecha-factura {
+        font-size: 14px;
+        color: #666;
+        text-align: right;
+        margin-top: 5px;
+    }
+
+    .estado-pedido {
+        background: #FFFACD;
+        border: 1px solid #F0E68C;
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .estado-label {
+        color: #C85A17;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .estado-valor {
+        background: #FFFACD;
+        color: #B8860B;
+        padding: 4px 12px;
+        border-radius: 3px;
+        font-weight: bold;
+        font-size: 13px;
+    }
+
+    .productos-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 30px 0;
+    }
+
+    .productos-table thead {
+        background: #F5F1E8;
+        border-top: 2px solid #C85A17;
+        border-bottom: 2px solid #C85A17;
+    }
+
+    .productos-table th {
+        padding: 12px;
+        text-align: left;
+        color: #333;
+        font-weight: bold;
+        font-size: 13px;
+        text-transform: uppercase;
+    }
+
+    .productos-table td {
+        padding: 12px;
+        border-bottom: 1px solid #E0E0E0;
+        font-size: 14px;
+    }
+
+    .productos-table tbody tr:hover {
+        background: #F9F7F3;
+    }
+
+    .producto-nombre {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .producto-categoria {
+        font-size: 12px;
+        color: #999;
+        margin-top: 3px;
+    }
+
+    .texto-derecha {
+        text-align: right;
+    }
+
+    .totales-section {
+        padding: 20px 0;
+        border-top: 1px solid #E0E0E0;
+    }
+
+    .totales-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+    .totales-row-label {
+        width: 150px;
+        text-align: right;
+    }
+
+    .totales-row-valor {
+        width: 100px;
+        text-align: right;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .total-final {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 2px solid #C85A17;
+    }
+
+    .total-final-label {
+        width: 150px;
+        text-align: right;
+        font-weight: bold;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .total-final-valor {
+        width: 100px;
+        text-align: right;
+        font-weight: bold;
+        font-size: 16px;
+        color: #C85A17;
+    }
+
+    .notas-importantes {
+        background: #E8F4F8;
+        border: 1px solid #B0E0E6;
+        border-radius: 4px;
+        padding: 15px;
+        margin: 30px 0;
+    }
+
+    .notas-titulo {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 13px;
+    }
+
+    .notas-lista {
+        list-style: disc;
+        margin-left: 20px;
+        font-size: 13px;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .notas-lista li {
+        margin-bottom: 5px;
+    }
+
+    .factura-footer {
+        background: #F5F1E8;
+        padding: 20px;
+        text-align: center;
+        border-top: 2px solid #E0E0E0;
+        font-size: 12px;
+        color: #666;
+        line-height: 1.8;
+    }
+
+    .footer-empresa {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .print-button {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .print-button button {
+        background: #C85A17;
+        color: white;
+        padding: 10px 30px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .print-button button:hover {
+        background: #A84910;
+    }
+
+    @media print {
+        .print-button {
+            display: none;
+        }
+
+        .factura-container {
+            box-shadow: none;
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+    .cantidad-unit {
+        text-align: center;
+    }
+
+    .precio-unit {
+        text-align: right;
+    }
+
+    .subtotal-item {
+        text-align: right;
+        font-weight: 600;
+    }
+</style>
+
+<div class="factura-container">
+    <!-- Header de la Factura -->
+    <div class="factura-header">
+        <div class="factura-header-left">
+            <h1>Tierra artesana</h1>
+            <p>Artesanías Colombianas Auténticas</p>
+        </div>
+        <div class="factura-header-right">
+            <div class="factura-badge"><i class="fas fa-file-invoice"></i></div>
+            <div style="font-size: 14px; margin-top: 5px;">FACTURA</div>
+        </div>
+    </div>
+
+    <!-- Contenido de la Factura -->
+    <div class="factura-content">
+        <div class="print-button">
+            <button onclick="window.print()"><i class="fas fa-print"></i> Imprimir Factura</button>
+        </div>
+
+        <!-- Información de Factura y Fecha -->
+        <div class="factura-info-row">
+            <div>
+                <div class="factura-info-title">FACTURA No.</div>
+                <div class="numero-factura">#{{ pedido.numero_pedido }}</div>
+            </div>
+            <div style="text-align: right;">
+                <div class="factura-info-title">FECHA</div>
+                <div class="fecha-factura">{{ pedido.fecha_pedido|date:"d \d\e F \d\e Y" }}<br><small>{{ pedido.fecha_pedido|time:"H:i" }}</small></div>
+            </div>
+        </div>
+
+        <!-- Cliente y Ubicación -->
+        <div class="factura-info-row">
+            <div class="factura-info-section">
+                <div class="factura-info-title">CLIENTE</div>
+                <div class="factura-info-data">
+                    <strong>{{ pedido.cliente.user.get_full_name|default:pedido.cliente.user.username }}</strong><br>
+                    ID: {{ pedido.cliente.id }}
+                </div>
+            </div>
+            <div class="factura-info-section">
+                <div class="factura-info-title">UBICACIÓN</div>
+                <div class="factura-info-data">
+                    {{ pedido.direccion_entrega|default:'No aplica' }}<br>
+                    {% if pedido.municipio %}
+                        {{ pedido.municipio.nombre }}, {{ pedido.municipio.departamento.nombre }}
+                    {% elif pedido.ciudad_entrega %}
+                        {{ pedido.ciudad_entrega }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado del Pedido -->
+        <div class="estado-pedido">
+            <span class="estado-label">Estado del Pedido:</span>
+            <span class="estado-valor">{{ pedido.get_estado_display }}</span>
+        </div>
+
+        <!-- Tabla de Productos -->
+        <div class="factura-info-title" style="margin-bottom: 15px;">PRODUCTOS</div>
+        <table class="productos-table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th class="cantidad-unit">Cantidad</th>
+                    <th class="precio-unit">Precio Unit.</th>
+                    <th class="precio-unit">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detalle in pedido.detalles.all %}
+                <tr>
+                    <td>
+                        <div class="producto-nombre">{{ detalle.producto.nombre }}</div>
+                        {% if detalle.talla %}
+                        <div class="producto-categoria">Talla: {{ detalle.talla }}</div>
+                        {% endif %}
+                        <div class="producto-categoria">{{ detalle.producto.categoria.nombre }}</div>
+                    </td>
+                    <td class="cantidad-unit">{{ detalle.cantidad }}</td>
+                    <td class="precio-unit">${{ detalle.precio_unitario|floatformat:0 }}</td>
+                    <td class="subtotal-item">${{ detalle.subtotal|floatformat:0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Totales -->
+        <div class="totales-section">
+            <div class="totales-row">
+                <div class="totales-row-label">Subtotal:</div>
+                <div class="totales-row-valor">${{ pedido.total|floatformat:0 }}</div>
+            </div>
+            {% if pedido.descuento > 0 %}
+            <div class="totales-row">
+                <div class="totales-row-label">Descuento:</div>
+                <div class="totales-row-valor">-${{ pedido.descuento|floatformat:0 }}</div>
+            </div>
+            {% endif %}
+            <div class="total-final">
+                <div class="total-final-label">TOTAL:</div>
+                <div class="total-final-valor">${{ pedido.total_final|floatformat:0 }}</div>
+            </div>
+        </div>
+
+        <!-- Notas Importantes (solo cliente) -->
+        {% if not admin_view %}
+        <div class="notas-importantes">
+            <div class="notas-titulo">Notas Importantes:</div>
+            <ul class="notas-lista">
+                <li>Esta factura es válida como comprobante de compra</li>
+                <li>Todos los productos son artesanales y pueden tener variaciones únicas</li>
+                <li>Para cualquier problema, usa el botón de reporte en tus pedidos</li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <div class="factura-footer">
+        <div class="footer-empresa">Tierra artesana - Artesanías Colombianas</div>
+        Email: contacto@tierraartesana.com | Tel: +57 (1) 234-5678<br>
+        www.tierraartesana.com
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+    {% if admin_view %}
+        <a href="{% url 'facturas_lista' %}" style="color: #C85A17; text-decoration: none; font-weight: bold;"><i class="fas fa-arrow-left"></i> Volver a facturas</a>
+    {% else %}
+        <a href="{% url 'historial_pedidos' %}" style="color: #C85A17; text-decoration: none; font-weight: bold;"><i class="fas fa-arrow-left"></i> Volver a mis pedidos</a>
+    {% endif %}
+</div>
+
+{% endblock %}

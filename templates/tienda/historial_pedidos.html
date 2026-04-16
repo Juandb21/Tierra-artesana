@@ -1,0 +1,604 @@
+{% extends 'tienda/base.html' %}
+
+{% block title %}Mis Pedidos - Tierra Artesana{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .pedidos-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .pedidos-title {
+            text-align: center;
+            font-size: 42px;
+            color: #C85A17;
+            margin-bottom: 50px;
+            font-weight: bold;
+        }
+
+        .pedido-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 1px solid #f0e6d8;
+        }
+
+        .pedido-header {
+            background: #F9F7F3;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 30px;
+            align-items: start;
+            border-bottom: 1px solid #f0e6d8;
+        }
+
+        .pedido-info-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pedido-numero {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .pedido-fecha {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .pedido-envio {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .pedido-total {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .pedido-monto {
+            font-size: 28px;
+            font-weight: bold;
+            color: #C85A17;
+        }
+
+        .pedido-estado {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #E8F4F8;
+            color: #3498db;
+        }
+
+        .pedido-estado-pendiente {
+            background: #E8F4F8;
+            color: #3498db;
+        }
+
+        .pedido-estado-procesando {
+            background: #FFF3E0;
+            color: #F57C00;
+        }
+
+        .pedido-estado-enviado {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .pedido-estado-entregado {
+            background: #E8F5E9;
+            color: #388E3C;
+        }
+
+        .pedido-contenido {
+            padding: 20px;
+        }
+
+        .producto-item {
+            display: grid;
+            grid-template-columns: 100px 1fr 100px 120px;
+            gap: 20px;
+            align-items: start;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0e6d8;
+        }
+
+        .producto-item:last-of-type {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .producto-imagen {
+            width: 100px;
+            height: 100px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .producto-imagen img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .producto-detalles {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .producto-nombre {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .producto-cantidad {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .producto-precio {
+            text-align: right;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .pedido-totales {
+            margin-top: 20px;
+            padding-top: 15px;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 20px;
+            border-top: 2px solid #f0e6d8;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            background: #F9F7F3;
+        }
+
+        .totales-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            font-size: 13px;
+        }
+
+        .total-label {
+            color: #666;
+        }
+
+        .total-valor {
+            color: #333;
+            font-weight: 500;
+            text-align: right;
+            min-width: 80px;
+        }
+
+        .pedido-pie {
+            padding: 20px;
+            background: #F9F7F3;
+            border-top: 1px solid #f0e6d8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .tiempo-restante {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        .tiempo-icon {
+            font-size: 16px;
+        }
+
+        .pedido-acciones {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-accion {
+            padding: 10px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-accion:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-factura {
+            color: #3498db;
+            border-color: #3498db;
+        }
+
+        .btn-factura:hover {
+            background: #E8F4F8;
+        }
+
+        .btn-editar {
+            color: #C85A17;
+            border-color: #C85A17;
+        }
+
+        .btn-editar:hover {
+            background: #F5EAE0;
+        }
+
+        .btn-eliminar {
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .btn-eliminar:hover {
+            background: #FADBD8;
+        }
+
+        .btn-reportar {
+            color: #F57C00;
+            border-color: #F57C00;
+        }
+
+        .btn-reportar:hover {
+            background: #FFF3E0;
+        }
+
+        .pedidos-vacio {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .pedidos-vacio p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .pedidos-vacio a {
+            display: inline-block;
+            background: #C85A17;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .pedidos-vacio a:hover {
+            background: #B04D10;
+        }
+
+        @media (max-width: 1024px) {
+            .pedido-header {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .producto-item {
+                grid-template-columns: 80px 1fr 80px;
+                gap: 15px;
+            }
+
+            .pedido-pie {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .pedido-acciones {
+                width: 100%;
+            }
+
+            .btn-accion {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .pedidos-container {
+                padding: 0 10px;
+            }
+
+            .pedidos-title {
+                font-size: 28px;
+                margin-bottom: 30px;
+            }
+
+            .pedido-card {
+                margin-bottom: 20px;
+            }
+
+            .pedido-header {
+                padding: 15px;
+            }
+
+            .pedido-numero {
+                font-size: 14px;
+            }
+
+            .pedido-monto {
+                font-size: 22px;
+            }
+
+            .producto-item {
+                grid-template-columns: 70px 1fr 70px;
+                gap: 10px;
+            }
+
+            .producto-imagen {
+                width: 70px;
+                height: 70px;
+            }
+
+            .producto-nombre {
+                font-size: 14px;
+            }
+
+            .producto-cantidad {
+                font-size: 12px;
+            }
+
+            .btn-accion {
+                flex: 1 1 calc(50% - 6px);
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+
+            .pedido-pie {
+                padding: 15px;
+            }
+
+            .tiempo-restante {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .pedidos-title {
+                font-size: 22px;
+                margin-bottom: 20px;
+            }
+
+            .pedido-header {
+                padding: 12px;
+                gap: 10px;
+            }
+
+            .pedido-numero {
+                font-size: 13px;
+            }
+
+            .pedido-fecha {
+                font-size: 12px;
+            }
+
+            .pedido-monto {
+                font-size: 18px;
+            }
+
+            .pedido-estado {
+                font-size: 11px;
+                padding: 5px 12px;
+            }
+
+            .producto-item {
+                grid-template-columns: 60px 1fr 60px;
+                gap: 8px;
+                margin-bottom: 15px;
+            }
+
+            .producto-imagen {
+                width: 60px;
+                height: 60px;
+            }
+
+            .producto-nombre {
+                font-size: 13px;
+            }
+
+            .producto-cantidad {
+                font-size: 11px;
+            }
+
+            .btn-accion {
+                flex: 1 1 calc(50% - 6px);
+                font-size: 11px;
+                padding: 7px 10px;
+                gap: 4px;
+            }
+
+            .tiempo-restante {
+                font-size: 12px;
+            }
+
+            .pedido-contenido {
+                padding: 15px;
+            }
+
+            .pedido-pie {
+                padding: 12px;
+                gap: 12px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="pedidos-container">
+    <h1 class="pedidos-title">Mis Pedidos</h1>
+
+    {% if pedidos %}
+        {% for pedido in pedidos %}
+        <div class="pedido-card">
+            <!-- Header del pedido -->
+            <div class="pedido-header">
+                <div class="pedido-info-left">
+                    <div class="pedido-numero">Pedido #{{ pedido.numero_pedido }}</div>
+                    <div class="pedido-fecha">{{ pedido.fecha_pedido|date:"d \d\e F \d\e Y, H:i" }}</div>
+                    <div class="pedido-envio">
+                        Ubicación: {% if pedido.municipio %}{{ pedido.municipio.nombre }}, {{ pedido.municipio.departamento.nombre }}{% elif pedido.ciudad_entrega %}{{ pedido.ciudad_entrega }}{% endif %}
+                    </div>
+                </div>
+
+                <div class="pedido-total">
+                    <div class="pedido-monto">${{ pedido.total_final|floatformat:0 }}</div>
+                    <span class="pedido-estado pedido-estado-{{ pedido.estado|lower }}">{{ pedido.get_estado_display }}</span>
+                </div>
+            </div>
+
+            <!-- Contenido - Productos -->
+            <div class="pedido-contenido">
+                {% for detalle in pedido.detalles.all %}
+                <div class="producto-item">
+                    <div class="producto-imagen">
+                        {% if detalle.producto.imagen %}
+                            <img src="{{ detalle.producto.imagen.url }}" alt="{{ detalle.producto.nombre }}">
+                        {% else %}
+                            <i class="fas fa-box" style="font-size: 32px; color: #999;"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="producto-detalles">
+                        <div class="producto-nombre">{{ detalle.producto.nombre }}</div>
+                        {% if detalle.talla %}
+                        <div class="producto-talla">Talla: {{ detalle.talla }}</div>
+                        {% endif %}
+                        <div class="producto-cantidad">Cantidad: {{ detalle.cantidad }}</div>
+                    </div>
+
+                    <div class="producto-precio">${{ detalle.precio_unitario|floatformat:0 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Totales -->
+            <div class="pedido-totales">
+                <div class="totales-items">
+                    <div class="total-row">
+                        <span class="total-label">Subtotal:</span>
+                        <span class="total-valor">${{ pedido.total|floatformat:0 }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pie del pedido - Tiempo restante y acciones -->
+            <div class="pedido-pie">
+                <div class="tiempo-restante">
+                    <span class="tiempo-icon"><i class="fas fa-clock"></i></span>
+                    <span id="timer-{{ pedido.id }}">Tiempo restante: --:--</span>
+                </div>
+
+                <div class="pedido-acciones">
+                    <a href="{% url 'confirmacion_compra' pedido.id %}" class="btn-accion btn-factura">
+                        <i class="fas fa-file-invoice"></i> Ver Factura
+                    </a>
+                    <form method="post" action="{% url 'eliminar_pedido' pedido.id %}" style="display: inline;" onsubmit="return confirm('¿Está seguro de que desea eliminar este pedido?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-accion btn-eliminar eliminar-btn-{{ pedido.id }}" {% if not pedido.puede_editarse %}style="display: none;"{% endif %}>
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </form>
+                    <a href="{% url 'reportar_problema' pedido.id %}" class="btn-accion btn-reportar">
+                        <i class="fas fa-flag"></i> Reportar Problema
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Contador de tiempo restante para editar (15 minutos)
+            (function() {
+                const pedidoId = '{{ pedido.id }}';
+                const horaCreacion = new Date('{{ pedido.fecha_pedido|date:"Y-m-d H:i:s" }}');
+                
+                function actualizarTiempo() {
+                    const ahora = new Date();
+                    const tiempoTranscurrido = Math.floor((ahora - horaCreacion) / 1000);
+                    const tiempoTotal = 15 * 60; // 15 minutos en segundos
+                    const tiempoRestante = Math.max(0, tiempoTotal - tiempoTranscurrido);
+
+                    const minutos = Math.floor(tiempoRestante / 60);
+                    const segundos = tiempoRestante % 60;
+
+                    const timerElement = document.getElementById('timer-' + pedidoId);
+                    if (timerElement) {
+                        if (tiempoRestante > 0) {
+                            timerElement.textContent = `Tiempo restante: ${minutos}:${segundos.toString().padStart(2, '0')}`;
+                            timerElement.parentElement.style.display = 'flex';
+                        } else {
+                            // Cuando se acaba el tiempo, ocultar el temporizador
+                            timerElement.parentElement.style.display = 'none';
+                        }
+                    }
+
+                    // Mostrar/ocultar botón de Eliminar según el tiempo (15 minutos)
+                    const eliminarBtn = document.querySelector('.eliminar-btn-' + pedidoId);
+                    
+                    if (tiempoRestante > 0) {
+                        if (eliminarBtn) eliminarBtn.style.display = 'inline-block';
+                    } else {
+                        if (eliminarBtn) eliminarBtn.style.display = 'none';
+                    }
+
+                    if (tiempoRestante > 0) {
+                        setTimeout(actualizarTiempo, 1000);
+                    }
+                }
+                actualizarTiempo();
+            })();
+        </script>
+        {% endfor %}
+    {% else %}
+        <div class="pedidos-vacio">
+            <p>No tienes pedidos aún.</p>
+            <a href="/">Continuar Comprando</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

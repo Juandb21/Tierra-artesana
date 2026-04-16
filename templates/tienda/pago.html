@@ -1,0 +1,518 @@
+{% extends "tienda/base.html" %}
+
+{% block title %}Pago del Servicio - Tierra Artesana{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .payment-container {
+            max-width: 900px;
+            margin: 40px auto;
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .payment-header h1 {
+            font-size: 36px;
+            color: #333;
+            margin: 0 0 10px 0;
+        }
+
+        .payment-header p {
+            color: #999;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .payment-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .payment-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+            order: -1;
+        }
+
+        .payment-summary h2 {
+            color: #C85A17;
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #E7B08A;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        .summary-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .summary-item-label {
+            color: #666;
+        }
+
+        .summary-item-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .summary-totals {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #E7B08A;
+        }
+
+        .summary-total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .summary-final-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-top: 15px;
+        }
+
+        .payment-methods {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .payment-methods h2 {
+            color: #C85A17;
+            font-size: 18px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #E7B08A;
+        }
+
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .payment-method {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .payment-method:hover {
+            border-color: #C85A17;
+            background-color: #FEF4EC;
+            transform: translateY(-5px);
+        }
+
+        .payment-method.selected {
+            border-color: #C85A17;
+            background-color: #FCE8D8;
+            box-shadow: 0 4px 12px rgba(200, 90, 23, 0.2);
+        }
+
+        .payment-method-icon {
+            width: 60px;
+            height: 60px;
+            background-color: #C85A17;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .payment-method-icon svg {
+            width: 32px;
+            height: 32px;
+            stroke: white;
+        }
+
+        .payment-method-name {
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .payment-method-description {
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .payment-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-confirm {
+            background-color: #C85A17;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-confirm:hover {
+            background-color: #B04D10;
+        }
+
+        .btn-confirm:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .btn-back {
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #e0e0e0;
+        }
+
+        .payment-note {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #FEF4EC;
+            border-left: 4px solid #C85A17;
+            border-radius: 3px;
+            font-size: 12px;
+            color: #2c3e50;
+        }
+
+        .payment-note strong {
+            color: #C85A17;
+        }
+
+        @media (max-width: 1024px) {
+            .payment-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .payment-summary {
+                order: -1;
+            }
+
+            .payment-methods {
+                order: 1;
+            }
+
+            .methods-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .payment-header h1 {
+                font-size: 24px;
+            }
+
+            .payment-header p {
+                font-size: 14px;
+            }
+
+            .payment-content {
+                margin-bottom: 25px;
+            }
+
+            .payment-summary,
+            .payment-methods {
+                padding: 20px;
+            }
+
+            .payment-summary h2,
+            .payment-methods h2 {
+                font-size: 16px;
+            }
+
+            .methods-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+
+            .payment-method {
+                padding: 20px 10px;
+            }
+
+            .payment-method-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 26px;
+                margin-bottom: 8px;
+            }
+
+            .payment-method-name {
+                font-size: 13px;
+            }
+
+            .payment-method-description {
+                font-size: 10px;
+            }
+
+            .btn-confirm,
+            .btn-back {
+                padding: 12px 30px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .payment-header h1 {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+
+            .payment-header p {
+                font-size: 12px;
+            }
+
+            .payment-summary,
+            .payment-methods {
+                padding: 15px;
+            }
+
+            .payment-summary h2,
+            .payment-methods h2 {
+                font-size: 14px;
+                margin-bottom: 15px;
+            }
+
+            .summary-item,
+            .summary-item-label,
+            .summary-total-row {
+                font-size: 12px;
+            }
+
+            .summary-final-total {
+                font-size: 16px;
+                margin-top: 10px;
+            }
+
+            .methods-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .payment-method {
+                padding: 15px;
+                flex-direction: row;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .payment-method-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
+                margin-bottom: 0;
+            }
+
+            .payment-method-name {
+                text-align: left;
+            }
+
+            .payment-method-description {
+                display: none;
+            }
+
+            .payment-actions {
+                flex-direction: column;
+            }
+
+            .btn-confirm,
+            .btn-back {
+                width: 100%;
+                padding: 12px;
+                font-size: 13px;
+            }
+
+            .payment-note {
+                font-size: 11px;
+                padding: 12px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="payment-container">
+        <div class="payment-header">
+            <h1>Pago del Servicio</h1>
+            <p>Confirma tu información y selecciona el método de pago</p>
+        </div>
+
+        <div class="payment-content">
+            <div class="payment-methods">
+                <h2>Método de Pago</h2>
+                
+                <form method="post" id="paymentForm">
+                    {% csrf_token %}
+                    
+                    <div class="methods-grid">
+                        <label class="payment-method" onclick="selectPaymentMethod(this, 'efectivo')">
+                            <input type="radio" name="metodo_pago" value="efectivo" style="display: none;" required>
+                            <div class="payment-method-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="7" width="20" height="10" rx="2"/>
+                                    <path d="M12 11v2M7 11v2M17 11v2"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="payment-method-name">Efectivo</div>
+                                <div class="payment-method-description">Pago en la entrega</div>
+                            </div>
+                        </label>
+
+                        <label class="payment-method" onclick="selectPaymentMethod(this, 'tarjeta')">
+                            <input type="radio" name="metodo_pago" value="tarjeta" style="display: none;">
+                            <div class="payment-method-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="5" width="20" height="14" rx="2"/>
+                                    <path d="M2 10h20"/>
+                                    <circle cx="7" cy="16" r="1" fill="currentColor"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="payment-method-name">Tarjeta</div>
+                                <div class="payment-method-description">Crédito/Débito</div>
+                            </div>
+                        </label>
+
+                        <label class="payment-method" onclick="selectPaymentMethod(this, 'transferencia')">
+                            <input type="radio" name="metodo_pago" value="transferencia" style="display: none;">
+                            <div class="payment-method-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="8 17 12 21 16 17"/>
+                                    <line x1="12" y1="3" x2="12" y2="21"/>
+                                    <circle cx="12" cy="4" r="1" fill="currentColor"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="payment-method-name">Transferencia</div>
+                                <div class="payment-method-description">Transferencia bancaria</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="payment-note">
+                        <strong><svg style="width: 16px; height: 16px; display: inline; stroke: #C85A17; margin-right: 5px;" viewBox="0 0 24 24" fill="none" stroke-width="2">
+                            <path d="M12 2L2 20h20L12 2z"/>
+                            <line x1="12" y1="9" x2="12" y2="14"/>
+                            <circle cx="12" cy="17" r="1" fill="#C85A17"/>
+                        </svg>Nota importante:</strong> Selecciona tu método de pago preferido. Recibirás instrucciones específicas según tu elección.
+                    </div>
+
+                    <div class="payment-actions" style="margin-top: 30px;">
+                        <a href="javascript:history.back()" class="btn-back">Volver</a>
+                        <button type="submit" class="btn-confirm" id="confirmBtn" disabled>
+                            Confirmar Pedido
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="payment-summary">
+                <h2>Resumen del Servicio</h2>
+                
+                {% for detalle in pedido.detalles.all %}
+                    <div class="summary-item">
+                        <span class="summary-item-label">
+                            <strong>{{ detalle.producto.nombre }}</strong><br>
+                            <span style="font-size: 11px;">{{ detalle.cantidad }} × ${{ detalle.precio_unitario|floatformat:0 }}</span>
+                        </span>
+                        <span class="summary-item-value">${{ detalle.subtotal|floatformat:0 }}</span>
+                    </div>
+                {% endfor %}
+
+                <div class="summary-totals">
+                    <div class="summary-total-row">
+                        <span class="summary-item-label">Subtotal:</span>
+                        <span class="summary-item-value">${{ pedido.total|floatformat:0 }}</span>
+                    </div>
+
+                    {% if pedido.descuento > 0 %}
+                        <div class="summary-total-row">
+                            <span class="summary-item-label">Descuento (10%):</span>
+                            <span class="summary-item-value" style="color: #27ae60;">-${{ pedido.descuento|floatformat:0 }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="summary-final-total">
+                        <span>Total a Pagar:</span>
+                        <span>${{ pedido.total_final|floatformat:0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function selectPaymentMethod(element, method) {
+            // Remover clase selected de todos los métodos
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.classList.remove('selected');
+            });
+            
+            // Agregar clase selected al método seleccionado
+            element.classList.add('selected');
+            
+            // Marcar el radio button
+            element.querySelector('input[type="radio"]').checked = true;
+            
+            // Habilitar botón de confirmación
+            document.getElementById('confirmBtn').disabled = false;
+        }
+
+        // Permitir seleccionar con Enter
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !document.getElementById('confirmBtn').disabled) {
+                document.getElementById('paymentForm').submit();
+            }
+        });
+    </script>
+{% endblock %}

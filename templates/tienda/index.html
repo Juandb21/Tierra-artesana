@@ -1,0 +1,671 @@
+{% extends "tienda/base.html" %}
+
+{% block title %}Inicio - Tierra Artesana{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .artisan-carousel {
+            min-height: 420px;
+            border-radius: 14px;
+            background: radial-gradient(circle at 20% 20%, #ffcc95 0%, #f7a85d 32%, #d46f23 100%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            transition: background-image 0.6s ease;
+        }
+
+        .carousel-overlay {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.35) 0, rgba(255, 255, 255, 0) 38%),
+                radial-gradient(circle at 85% 80%, rgba(255, 219, 168, 0.3) 0, rgba(255, 219, 168, 0) 42%);
+            pointer-events: none;
+        }
+
+        .carousel-track {
+            position: relative;
+            width: 100%;
+            min-height: 420px;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(1.03);
+            transition: opacity 0.55s ease, transform 0.55s ease;
+            pointer-events: none;
+            padding: 40px 20px;
+            z-index: 1;
+        }
+
+        .carousel-slide.is-active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+            z-index: 2;
+        }
+
+        .carousel-slide-content {
+            max-width: 980px;
+            width: 100%;
+            position: relative;
+            z-index: 3;
+        }
+
+        .carousel-poster {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 26px;
+            align-items: center;
+            background: rgba(255, 247, 237, 0.86);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 22px;
+            padding: 24px;
+            box-shadow: 0 12px 28px rgba(88, 40, 12, 0.22);
+        }
+
+        .poster-media {
+            position: relative;
+            border-radius: 18px;
+            overflow: hidden;
+            background: linear-gradient(160deg, #d06f28, #8f3d0d);
+            min-height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .poster-media::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.18));
+            pointer-events: none;
+        }
+
+        .poster-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            inset: 0;
+        }
+
+        .poster-placeholder {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .poster-info {
+            color: #2b1b10;
+            text-align: left;
+        }
+
+        .carousel-category {
+            display: inline-block;
+            background: rgba(200, 90, 23, 0.14);
+            color: #8f3d0d;
+            border: 1px solid rgba(200, 90, 23, 0.35);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
+        .carousel-slide h2 {
+            font-size: clamp(28px, 4.2vw, 48px);
+            margin-bottom: 14px;
+            letter-spacing: 0.01em;
+            color: #2d1a0f;
+        }
+
+        .carousel-slide p {
+            font-size: clamp(15px, 1.8vw, 20px);
+            color: #4a3528;
+            margin-bottom: 20px;
+            line-height: 1.45;
+        }
+
+        .carousel-price {
+            font-size: clamp(28px, 3.5vw, 44px);
+            font-weight: 800;
+            color: #F18A2A;
+            margin-bottom: 18px;
+        }
+
+        .poster-info .btn {
+            background: #9e3f11;
+        }
+
+        .poster-info .btn:hover {
+            background: #7f310b;
+        }
+
+        .carousel-nav button {
+            border-radius: 999px;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(3px);
+            background-color: rgba(0, 0, 0, 0.35);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .carousel-nav button:hover {
+            transform: scale(1.08);
+            background-color: rgba(200, 90, 23, 0.8);
+        }
+
+        .carousel-dots {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 18px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            z-index: 4;
+        }
+
+        .carousel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .carousel-dot.is-active {
+            background: #F18A2A;
+            transform: scale(1.2);
+        }
+
+        .poster-line {
+            width: 90px;
+            height: 4px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #f18a2a, #d05f18);
+            margin-bottom: 16px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            max-width: 500px;
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .search-bar button {
+            padding: 12px 30px;
+            background-color: #C85A17;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .search-bar button:hover {
+            background-color: #B04D10;
+        }
+
+        /* Estilos para productos */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .product-image {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background-color: #f0f0f0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .category-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #C85A17;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .product-info {
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
+        .availability-info {
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .product-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #C85A17;
+            margin: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .search-bar {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .search-bar input {
+                max-width: 100%;
+            }
+
+            .search-bar button {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .carousel-poster {
+                grid-template-columns: 1fr;
+                gap: 14px;
+                padding: 16px;
+                border-radius: 16px;
+            }
+
+            .poster-media {
+                min-height: 210px;
+            }
+
+            .poster-info {
+                text-align: center;
+            }
+
+            .poster-line {
+                margin: 0 auto 12px;
+            }
+
+            .search-bar input {
+                flex: 1;
+                min-width: 100%;
+            }
+
+            .search-bar button {
+                width: 100%;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 15px;
+            }
+
+            .category-badge {
+                font-size: 11px;
+                padding: 3px 8px;
+            }
+
+            .product-info {
+                padding: 12px;
+            }
+
+            .product-name {
+                font-size: 14px;
+            }
+
+            .availability-info {
+                font-size: 12px;
+            }
+
+            .product-price {
+                font-size: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+                gap: 10px;
+            }
+
+            .search-bar {
+                margin-bottom: 25px;
+            }
+
+            .search-bar input {
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+
+            .product-image {
+                height: 150px;
+            }
+
+            .category-badge {
+                font-size: 10px;
+                padding: 3px 6px;
+                top: 5px;
+                right: 5px;
+            }
+
+            .product-info {
+                padding: 10px;
+            }
+
+            .product-name {
+                font-size: 12px;
+                margin-bottom: 5px;
+            }
+
+            .product-price {
+                font-size: 13px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% if mostrar_carrusel %}
+    <!-- Carrusel de productos destacados -->
+    <div class="carousel artisan-carousel" id="artisanCarousel">
+        <div class="carousel-overlay"></div>
+
+        {% if user.is_authenticated and productos_destacados|length > 1 %}
+            <div class="carousel-nav">
+                <button type="button" onclick="prevSlide()" aria-label="Anterior">&#10094;</button>
+                <button type="button" onclick="nextSlide()" aria-label="Siguiente">&#10095;</button>
+            </div>
+        {% endif %}
+
+        <div class="carousel-track" id="carouselTrack">
+            {% if productos_destacados %}
+                {% for producto in productos_destacados %}
+                    {% cycle 'sunset' 'cobre' 'verde' 'arcilla' as poster_tone silent %}
+                    <article class="carousel-slide {% if forloop.first %}is-active{% endif %}" data-bg="{% if producto.imagen %}{{ producto.imagen.url }}{% endif %}" data-tone="{{ poster_tone }}">
+                        <div class="carousel-slide-content">
+                            <div class="carousel-poster">
+                                <div class="poster-media">
+                                    {% if producto.imagen %}
+                                        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+                                    {% else %}
+                                        <span class="poster-placeholder"><i class="fas fa-palette"></i> Pieza Artesanal</span>
+                                    {% endif %}
+                                </div>
+                                <div class="poster-info">
+                                    {% if producto.categoria %}
+                                        <span class="carousel-category">{{ producto.categoria.nombre }}</span>
+                                    {% endif %}
+                                    <div class="poster-line"></div>
+                                    <h2>{{ producto.nombre }}</h2>
+                                    <p>{{ producto.descripcion|truncatewords:20 }}</p>
+                                    <div class="carousel-price">${{ producto.precio|floatformat:0 }}</div>
+                                    {% if user.is_authenticated %}
+                                        <a href="/producto/{{ producto.id }}/" class="btn">Ver Detalles</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            {% else %}
+                <article class="carousel-slide is-active">
+                    <div class="carousel-slide-content">
+                        <div class="carousel-poster">
+                            <div class="poster-media">
+                                <span class="poster-placeholder"><i class="fas fa-vase"></i> Coleccion</span>
+                            </div>
+                            <div class="poster-info">
+                                <span class="carousel-category">Tierra artesana</span>
+                                <div class="poster-line"></div>
+                                <h2>Bienvenido a Tierra Artesana</h2>
+                                <p>Ceramica artesanal hecha a mano con identidad colombiana.</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            {% endif %}
+        </div>
+
+        {% if user.is_authenticated and productos_destacados|length > 1 %}
+            <div class="carousel-dots" id="carouselDots">
+                {% for producto in productos_destacados %}
+                    <button type="button" class="carousel-dot {% if forloop.first %}is-active{% endif %}" aria-label="Ir al slide {{ forloop.counter }}" onclick="goToSlide({{ forloop.counter0 }})"></button>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Barra de búsqueda -->
+    {% if user.is_authenticated %}
+        <form method="get" action="/buscar/" class="search-bar">
+            <input type="text" name="q" placeholder="Buscar productos por nombre, categoría o descripción...">
+            <button type="submit">Buscar</button>
+        </form>
+    {% endif %}
+
+    <!-- Sección de productos destacados -->
+    <h3 class="section-title">Nuestros Productos Artesanales</h3>
+    
+    <div class="products-grid">
+        {% for producto in productos_todos %}
+            {% if user.is_authenticated %}
+            <a href="/producto/{{ producto.id }}/" style="text-decoration: none; color: inherit;">
+                <div class="product-card">
+                    <div class="product-image">
+                        {% if producto.imagen %}
+                            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+                        {% else %}
+                            <span><i class="fas fa-box" style="color: #999; font-size: 24px;"></i> Sin imagen</span>
+                        {% endif %}
+                        {% if producto.categoria %}
+                            <span class="category-badge">{{ producto.categoria.nombre }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h4 class="product-name">{{ producto.nombre }}</h4>
+                        <p class="availability-info">
+                            {% if producto.disponible %}
+                                <span style="color: #27ae60;"><i class="fas fa-map-pin"></i> {{ producto.cantidad_disponible }} disponibles</span>
+                                {% if producto.tallas_con_stock %}
+                                    <br>
+                                    <span style="color: #6c757d; font-size: 12px;">
+                                        Tamaños:
+                                        {% for item in producto.tallas_con_stock %}
+                                            {{ item.tamano }}({{ item.stock|default:0 }}){% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #e74c3c;">Agotado</span>
+                            {% endif %}
+                        </p>
+                        <p class="product-price">${{ producto.precio|floatformat:0 }}</p>
+                    </div>
+                </div>
+            </a>
+            {% else %}
+            <div class="product-card" style="cursor: default;">
+                <div class="product-image">
+                    {% if producto.imagen %}
+                        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+                    {% else %}
+                        <span><i class="fas fa-box" style="color: #999; font-size: 24px;"></i> Sin imagen</span>
+                    {% endif %}
+                    {% if producto.categoria %}
+                        <span class="category-badge">{{ producto.categoria.nombre }}</span>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <h4 class="product-name">{{ producto.nombre }}</h4>
+                    <p class="availability-info">
+                        {% if producto.disponible %}
+                            <span style="color: #27ae60;"><i class="fas fa-map-pin"></i> {{ producto.cantidad_disponible }} disponibles</span>
+                            {% if producto.tallas_con_stock %}
+                                <br>
+                                <span style="color: #6c757d; font-size: 12px;">
+                                    Tamaños:
+                                    {% for item in producto.tallas_con_stock %}
+                                        {{ item.tamano }}({{ item.stock|default:0 }}){% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: #e74c3c;">Agotado</span>
+                        {% endif %}
+                    </p>
+                    <p class="product-price">${{ producto.precio|floatformat:0 }}</p>
+                </div>
+            </div>
+            {% endif %}
+        {% empty %}
+            <p style="grid-column: 1/-1; text-align: center; color: #999;">No hay productos disponibles en este momento.</p>
+        {% endfor %}
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        let autoSlideTimer;
+
+        const carouselElement = document.getElementById('artisanCarousel');
+        const slideElements = document.querySelectorAll('.carousel-slide');
+        const dotElements = document.querySelectorAll('.carousel-dot');
+        const totalSlides = slideElements.length;
+
+        function applyCarouselBackground(index) {
+            if (!carouselElement || !slideElements[index]) {
+                return;
+            }
+
+            const imageUrl = slideElements[index].dataset.bg;
+            const tone = slideElements[index].dataset.tone;
+            const toneBackgrounds = {
+                sunset: 'radial-gradient(circle at 12% 12%, #ffd7a8 0%, #f7a861 34%, #cb631c 100%)',
+                cobre: 'radial-gradient(circle at 18% 20%, #ffca8f 0%, #e88b3d 38%, #9f4b15 100%)',
+                verde: 'radial-gradient(circle at 20% 20%, #d6f0df 0%, #8db99c 34%, #4f6d58 100%)',
+                arcilla: 'radial-gradient(circle at 16% 14%, #ffd3b8 0%, #f39d71 36%, #bf5b2b 100%)'
+            };
+
+            const gradient = toneBackgrounds[tone] || toneBackgrounds.sunset;
+
+            if (imageUrl) {
+                carouselElement.style.backgroundImage =
+                    `${gradient}, url('${imageUrl}')`;
+                carouselElement.style.backgroundSize = 'cover';
+                carouselElement.style.backgroundPosition = 'center';
+            } else {
+                carouselElement.style.backgroundImage = gradient;
+            }
+        }
+
+        function updateSlide() {
+            if (totalSlides === 0) {
+                return;
+            }
+
+            slideElements.forEach((slide, index) => {
+                slide.classList.toggle('is-active', index === currentSlide);
+            });
+
+            dotElements.forEach((dot, index) => {
+                dot.classList.toggle('is-active', index === currentSlide);
+            });
+
+            applyCarouselBackground(currentSlide);
+        }
+
+        function nextSlide() {
+            if (totalSlides <= 1) {
+                return;
+            }
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlide();
+        }
+
+        function prevSlide() {
+            if (totalSlides <= 1) {
+                return;
+            }
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlide();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlide();
+            resetAutoSlide();
+        }
+
+        function resetAutoSlide() {
+            if (totalSlides <= 1) {
+                return;
+            }
+            clearInterval(autoSlideTimer);
+            autoSlideTimer = setInterval(nextSlide, 5500);
+        }
+
+        updateSlide();
+        resetAutoSlide();
+    </script>
+{% endblock %}

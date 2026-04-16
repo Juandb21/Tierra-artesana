@@ -1,0 +1,490 @@
+{% extends "tienda/base.html" %}
+{% load l10n %}
+
+{% block title %}Editar Producto - Tierra Artesana{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .admin-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="password"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #C85A17;
+            box-shadow: 0 0 0 3px rgba(200, 90, 23, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .error-list {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 25px;
+        }
+
+        .error-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .error-list li {
+            margin: 5px 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .btn-submit {
+            background-color: #C85A17;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #B04D10;
+        }
+
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background-color: #5a6268;
+        }
+
+        .current-image {
+            margin: 15px 0;
+        }
+
+        .current-image img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .price-edit-wrap {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .price-edit-wrap input {
+            flex: 1;
+        }
+
+        .btn-price-toggle {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 11px 14px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: background-color 0.3s;
+        }
+
+        .btn-price-toggle:hover {
+            background-color: #5a6268;
+        }
+
+        #precio[readonly] {
+            background-color: #f4f4f4;
+            color: #555;
+        }
+
+        .tallas-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .talla-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .talla-row input {
+            flex: 1;
+        }
+
+        .btn-talla-add,
+        .btn-talla-remove {
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .btn-talla-add {
+            background-color: #C85A17;
+            padding: 10px 14px;
+        }
+
+        .btn-talla-add:hover {
+            background-color: #B04D10;
+        }
+
+        .btn-talla-remove {
+            background-color: #dc3545;
+            padding: 10px 12px;
+            min-width: 42px;
+        }
+
+        .btn-talla-remove:hover {
+            background-color: #c82333;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="admin-container">
+        <a href="{% url 'productos_lista' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
+
+        <div class="page-header">
+            <h1><i class="fas fa-edit"></i> Editar Producto</h1>
+        </div>
+
+        {% if errores %}
+            <div class="error-list">
+                <strong>Por favor corrige los siguientes errores:</strong>
+                <ul>
+                    {% for error in errores %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="form-container">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="nombre">Nombre del Producto *</label>
+                    <input type="text" id="nombre" name="nombre" placeholder="Ej: Maceta de cerámica" value="{{ nombre }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" placeholder="Describe el producto...">{{ descripcion }}</textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="precio">Precio *</label>
+                        <div class="price-edit-wrap">
+                            <input type="number" id="precio" name="precio" placeholder="0.00" step="0.01" value="{{ precio|unlocalize }}" data-base-price="{{ precio|unlocalize }}" readonly required>
+                            <button type="button" id="btnTogglePrecio" class="btn-price-toggle">Editar precio</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cantidad_disponible">Cantidad Disponible *</label>
+                        <input type="number" id="cantidad_disponible" name="cantidad_disponible" placeholder="0" value="{{ cantidad_disponible|unlocalize }}" required>
+                        <small id="cantidadHelp" style="color: #777; display: block; margin-top: 6px;">Si agregas tamaños con cantidad, este total se calcula automáticamente.</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoria">Categoría</label>
+                    <select id="categoria" name="categoria">
+                        <option value="">-- Seleccionar categoría --</option>
+                        {% for cat in categorias %}
+                            <option value="{{ cat.id }}" {% if cat.id|stringformat:"s" == categoria_id %}selected{% endif %}>{{ cat.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    {% if producto.imagen %}
+                        <div class="current-image">
+                            <label>Imagen Actual</label>
+                            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+                        </div>
+                    {% endif %}
+                    <label for="imagen">Cambiar Imagen</label>
+                    <input type="file" id="imagen" name="imagen" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label for="tallas">Tamaño por número (opcional)</label>
+                    <input type="hidden" id="tallas" name="tallas" value="{{ tallas }}">
+                    <div id="tallasList" class="tallas-list"></div>
+                    <button type="button" id="btnAgregarTalla" class="btn-talla-add"><i class="fas fa-plus"></i> Agregar tamaño</button>
+                    <small style="color: #777; display: block; margin-top: 8px;">Agrega tamaño y cantidad por fila (ej: tamaño 26 con cantidad 3). Deja vacío si no aplica.</small>
+                </div>
+
+                <div class="button-group">
+                    <a href="{% url 'productos_lista' %}" class="btn-cancel">Cancelar</a>
+                    <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const precioInput = document.getElementById('precio');
+            const btnTogglePrecio = document.getElementById('btnTogglePrecio');
+
+            if (!precioInput || !btnTogglePrecio) {
+                return;
+            }
+
+            const precioReal = (precioInput.dataset.basePrice || '').trim();
+
+            // Forzar precio base al abrir edición, excepto si hubo errores de formulario.
+            {% if not errores %}
+            if (precioReal) {
+                precioInput.value = precioReal;
+            }
+            {% endif %}
+
+            btnTogglePrecio.addEventListener('click', function () {
+                const estaBloqueado = precioInput.hasAttribute('readonly');
+
+                if (estaBloqueado) {
+                    precioInput.removeAttribute('readonly');
+                    precioInput.focus();
+                    precioInput.select();
+                    btnTogglePrecio.textContent = 'Bloquear precio';
+                    return;
+                }
+
+                if (!precioInput.value.trim() && precioReal) {
+                    precioInput.value = precioReal;
+                }
+
+                precioInput.setAttribute('readonly', 'readonly');
+                btnTogglePrecio.textContent = 'Editar precio';
+            });
+
+            const hiddenTallas = document.getElementById('tallas');
+            const tallasList = document.getElementById('tallasList');
+            const btnAgregarTalla = document.getElementById('btnAgregarTalla');
+
+            if (hiddenTallas && tallasList && btnAgregarTalla) {
+                function actualizarHiddenTallas() {
+                    const valores = Array.from(tallasList.querySelectorAll('.talla-row'))
+                        .map((row) => {
+                            const tamano = row.querySelector('.talla-input').value.trim();
+                            const stock = row.querySelector('.stock-input').value.trim();
+                            if (!tamano && !stock) {
+                                return '';
+                            }
+                            return `${tamano}:${stock}`;
+                        })
+                        .filter((valor) => valor !== '');
+                    hiddenTallas.value = valores.join(',');
+                    sincronizarCantidadDisponible();
+                }
+
+                function sincronizarCantidadDisponible() {
+                    const cantidadInput = document.getElementById('cantidad_disponible');
+                    if (!cantidadInput) {
+                        return;
+                    }
+
+                    const filas = Array.from(tallasList.querySelectorAll('.talla-row'));
+                    let hayTamanos = false;
+                    let total = 0;
+
+                    filas.forEach((row) => {
+                        const tamano = row.querySelector('.talla-input').value.trim();
+                        const stock = row.querySelector('.stock-input').value.trim();
+                        if (tamano !== '' || stock !== '') {
+                            hayTamanos = true;
+                        }
+                        const stockNum = parseInt(stock, 10);
+                        if (!Number.isNaN(stockNum) && stockNum > 0) {
+                            total += stockNum;
+                        }
+                    });
+
+                    if (hayTamanos) {
+                        cantidadInput.value = total;
+                        cantidadInput.setAttribute('readonly', 'readonly');
+                    } else {
+                        cantidadInput.removeAttribute('readonly');
+                    }
+                }
+
+                function crearFilaTalla(valor = '', stock = '') {
+                    const row = document.createElement('div');
+                    row.className = 'talla-row';
+
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.step = '0.5';
+                    input.min = '1';
+                    input.placeholder = 'Tamaño (ej: 26)';
+                    input.className = 'talla-input';
+                    input.value = valor;
+
+                    const stockInput = document.createElement('input');
+                    stockInput.type = 'number';
+                    stockInput.step = '1';
+                    stockInput.min = '0';
+                    stockInput.placeholder = 'Cantidad';
+                    stockInput.className = 'stock-input';
+                    stockInput.value = stock;
+
+                    const btnEliminar = document.createElement('button');
+                    btnEliminar.type = 'button';
+                    btnEliminar.className = 'btn-talla-remove';
+                    btnEliminar.innerHTML = '<i class="fas fa-trash"></i>';
+                    btnEliminar.setAttribute('aria-label', 'Eliminar tamaño');
+
+                    btnEliminar.addEventListener('click', function () {
+                        if (tallasList.children.length === 1) {
+                            input.value = '';
+                            stockInput.value = '';
+                        } else {
+                            row.remove();
+                        }
+                        actualizarHiddenTallas();
+                    });
+
+                    input.addEventListener('input', actualizarHiddenTallas);
+                    stockInput.addEventListener('input', actualizarHiddenTallas);
+
+                    row.appendChild(input);
+                    row.appendChild(stockInput);
+                    row.appendChild(btnEliminar);
+                    tallasList.appendChild(row);
+                }
+
+                const iniciales = (hiddenTallas.value || '')
+                    .split(',')
+                    .map((valor) => valor.trim())
+                    .filter(Boolean);
+
+                if (iniciales.length) {
+                    iniciales.forEach((item) => {
+                        if (item.includes(':')) {
+                            const partes = item.split(':');
+                            crearFilaTalla((partes[0] || '').trim(), (partes[1] || '').trim());
+                            return;
+                        }
+                        crearFilaTalla(item, '');
+                    });
+                } else {
+                    crearFilaTalla('', '');
+                }
+
+                btnAgregarTalla.addEventListener('click', function () {
+                    crearFilaTalla('', '');
+                    actualizarHiddenTallas();
+                    const inputs = tallasList.querySelectorAll('.talla-input');
+                    inputs[inputs.length - 1].focus();
+                });
+
+                const form = hiddenTallas.closest('form');
+                if (form) {
+                    form.addEventListener('submit', actualizarHiddenTallas);
+                }
+
+                sincronizarCantidadDisponible();
+            }
+
+        })();
+    </script>
+{% endblock %}
