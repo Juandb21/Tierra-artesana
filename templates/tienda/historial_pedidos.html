@@ -288,6 +288,19 @@
             background: #FFF3E0;
         }
 
+        .reporte-bloqueado-info {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 14px;
+            border: 1px dashed #d8d8d8;
+            border-radius: 5px;
+            color: #777;
+            background: #fafafa;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
         .pedidos-vacio {
             text-align: center;
             padding: 60px 20px;
@@ -544,9 +557,15 @@
                             <i class="fas fa-trash"></i> Eliminar
                         </button>
                     </form>
+                    {% if pedido.estado == 'entregado' %}
                     <a href="{% url 'reportar_problema' pedido.id %}" class="btn-accion btn-reportar">
                         <i class="fas fa-flag"></i> Reportar Problema
                     </a>
+                    {% else %}
+                    <span class="reporte-bloqueado-info">
+                        <i class="fas fa-info-circle"></i> Podras reportar cuando el pedido sea entregado
+                    </span>
+                    {% endif %}
                 </div>
             </div>
         </div>

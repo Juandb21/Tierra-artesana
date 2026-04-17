@@ -45,6 +45,7 @@ urlpatterns = [
     
     # Gestión de pedidos
     path('dashboard/pedidos/', views.pedidos_lista, name='pedidos_lista'),
+    path('dashboard/pedidos/reporte/<int:pedido_id>/', views.pedidos_ver_reporte, name='pedidos_ver_reporte'),
     path('dashboard/pedidos/cambiar-estado/<int:pedido_id>/', views.pedidos_cambiar_estado, name='pedidos_cambiar_estado'),
     
     # Gestión de facturas

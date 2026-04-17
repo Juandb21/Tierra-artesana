@@ -166,6 +166,7 @@
             <div class="pedido-info">
                 <p><strong>Número de Pedido:</strong> #{{ pedido.numero_pedido }}</p>
                 <p><strong>Cliente:</strong> {{ pedido.cliente.user.get_full_name }}</p>
+                <p><strong>Telefono:</strong> {{ pedido.cliente.telefono|default:'No registrado' }}</p>
                 <p><strong>Email:</strong> {{ pedido.cliente.user.email }}</p>
                 <p><strong>Total:</strong> ${{ pedido.total|floatformat:0 }}</p>
                 <p><strong>Fecha:</strong> {{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</p>

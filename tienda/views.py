@@ -12,6 +12,7 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 from decimal import Decimal
 import uuid
+import re
 
 
 def limpiar_tallas_numericas(tallas_raw):
@@ -97,13 +98,22 @@ def registrarse(request):
     if request.method == 'POST':
         nombre_completo = request.POST.get('nombre_completo')
         email = request.POST.get('email')
+        telefono = request.POST.get('telefono', '').strip()
         contraseña = request.POST.get('contraseña')
         confirmar_contraseña = request.POST.get('confirmar_contraseña')
         acepta_terminos = request.POST.get('acepta_terminos')
         
         # Validaciones
-        if not all([nombre_completo, email, contraseña, confirmar_contraseña]):
+        if not all([nombre_completo, email, telefono, contraseña, confirmar_contraseña]):
             messages.error(request, 'Todos los campos son requeridos')
+            return redirect('registrarse')
+
+        telefono_limpio = re.sub(r'\D', '', telefono)
+        if telefono_limpio.startswith('57') and len(telefono_limpio) == 12:
+            telefono_limpio = telefono_limpio[2:]
+
+        if len(telefono_limpio) != 10 or not telefono_limpio.startswith('3'):
+            messages.error(request, 'Ingresa un número de celular colombiano válido (10 dígitos, inicia por 3)')
             return redirect('registrarse')
 
         if acepta_terminos != 'on':
@@ -132,7 +142,7 @@ def registrarse(request):
         )
         
         # Crear cliente
-        Cliente.objects.create(user=user)
+        Cliente.objects.create(user=user, telefono=telefono_limpio)
         
         messages.success(request, 'Cuenta creada exitosamente. Inicia sesión')
         return redirect('iniciar_sesion')
@@ -559,6 +569,10 @@ def eliminar_pedido(request, pedido_id):
 def reportar_problema(request, pedido_id):
     cliente = get_object_or_404(Cliente, user=request.user)
     pedido = get_object_or_404(Pedido, id=pedido_id, cliente=cliente)
+
+    if pedido.estado != 'entregado':
+        messages.error(request, 'Solo puedes reportar problemas cuando el pedido esté entregado.')
+        return redirect('historial_pedidos')
     
     if request.method == 'POST':
         descripcion = request.POST.get('descripcion', '')
@@ -971,7 +985,7 @@ def pedidos_lista(request):
     
     estados_permitidos = [
         estado for estado in Pedido.ESTADOS
-        if estado[0] in ('pendiente', 'enviado', 'cancelado')
+        if estado[0] in ('pendiente', 'enviado', 'entregado', 'cancelado')
     ]
     valores_permitidos = {valor for valor, _ in estados_permitidos}
 
@@ -988,7 +1002,10 @@ def pedidos_lista(request):
         default=models.Value(0),
         output_field=models.IntegerField(),
     )
-    pedidos = Pedido.objects.annotate(_enviados_al_final=enviados_al_final).order_by('_enviados_al_final', 'fecha_pedido', 'id')
+    pedidos = Pedido.objects.annotate(
+        _enviados_al_final=enviados_al_final,
+        total_reportes=models.Count('reporte', distinct=True),
+    ).order_by('_enviados_al_final', 'fecha_pedido', 'id')
     
     if estado_filtro:
         pedidos = pedidos.filter(estado=estado_filtro)
@@ -1012,6 +1029,26 @@ def pedidos_lista(request):
 
 
 @login_required(login_url='iniciar_sesion')
+def pedidos_ver_reporte(request, pedido_id):
+    """Ver reportes de un pedido desde el panel administrativo."""
+    if not verificar_admin(request):
+        return redirect('index')
+
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    reportes = Reporte.objects.filter(pedido=pedido).order_by('-fecha_creacion')
+
+    if not reportes.exists():
+        messages.info(request, f'El pedido {pedido.numero_pedido} no tiene reportes.')
+        return redirect('pedidos_lista')
+
+    context = {
+        'pedido': pedido,
+        'reportes': reportes,
+    }
+    return render(request, 'tienda/pedidos_reporte_detalle.html', context)
+
+
+@login_required(login_url='iniciar_sesion')
 def pedidos_cambiar_estado(request, pedido_id):
     """Cambiar estado del pedido a transporte"""
     if not verificar_admin(request):
@@ -1019,13 +1056,13 @@ def pedidos_cambiar_estado(request, pedido_id):
     
     pedido = get_object_or_404(Pedido, id=pedido_id)
 
-    if pedido.estado == 'enviado':
-        messages.error(request, f'El pedido {pedido.numero_pedido} ya fue enviado y no se puede editar')
+    if pedido.estado in ('entregado', 'cancelado'):
+        messages.error(request, f'El pedido {pedido.numero_pedido} ya no se puede editar por estar finalizado')
         return redirect('pedidos_lista')
 
     estados_permitidos = [
         estado for estado in Pedido.ESTADOS
-        if estado[0] in ('pendiente', 'enviado')
+        if estado[0] in ('pendiente', 'enviado', 'entregado', 'cancelado')
     ]
     valores_permitidos = {valor for valor, _ in estados_permitidos}
     

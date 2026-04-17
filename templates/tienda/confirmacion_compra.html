@@ -338,6 +338,7 @@
                 <div class="factura-info-title">CLIENTE</div>
                 <div class="factura-info-data">
                     <strong>{{ pedido.cliente.user.get_full_name|default:pedido.cliente.user.username }}</strong><br>
+                    Telefono: {{ pedido.cliente.telefono|default:'No registrado' }}<br>
                     ID: {{ pedido.cliente.id }}
                 </div>
             </div>

@@ -213,6 +213,7 @@
                 <div class="info-item">
                     <p><strong>Cliente:</strong></p>
                     <p>{{ factura.cliente.user.get_full_name }}</p>
+                    <p><small style="color: #6c757d;">{{ factura.cliente.telefono|default:'No registrado' }}</small></p>
                 </div>
                 <div class="info-item">
                     <p><strong>Email:</strong></p>

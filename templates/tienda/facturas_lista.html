@@ -206,7 +206,10 @@
                         {% for factura in facturas %}
                             <tr>
                                 <td>#{{ factura.numero_pedido }}</td>
-                                <td>{{ factura.cliente.user.get_full_name }}</td>
+                                <td>
+                                    {{ factura.cliente.user.get_full_name }}<br>
+                                    <small style="color: #6c757d;">{{ factura.cliente.telefono|default:'No registrado' }}</small>
+                                </td>
                                 <td>${{ factura.total|add:factura.descuento|floatformat:0 }}</td>
                                 <td>${{ factura.descuento|floatformat:0 }}</td>
                                 <td><strong>${{ factura.total|floatformat:0 }}</strong></td>

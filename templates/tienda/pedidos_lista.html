@@ -131,6 +131,31 @@
             color: #721c24;
         }
 
+        .report-badge {
+            display: inline-block;
+            padding: 7px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1;
+            text-decoration: none;
+        }
+
+        .report-yes {
+            background-color: #fff3cd;
+            color: #856404;
+            cursor: pointer;
+        }
+
+        .report-yes:hover {
+            background-color: #ffe69c;
+        }
+
+        .report-no {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+
         .actions {
             display: flex;
             gap: 10px;
@@ -201,6 +226,7 @@
                             <th>Total</th>
                             <th>Fecha</th>
                             <th>Estado</th>
+                            <th>Reporte</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -208,7 +234,10 @@
                         {% for pedido in pedidos %}
                             <tr>
                                 <td>#{{ pedido.numero_pedido }}</td>
-                                <td>{{ pedido.cliente.user.get_full_name }}</td>
+                                <td>
+                                    {{ pedido.cliente.user.get_full_name }}<br>
+                                    <small style="color: #6c757d;">{{ pedido.cliente.telefono|default:'No registrado' }}</small>
+                                </td>
                                 <td>${{ pedido.total|floatformat:0 }}</td>
                                 <td>{{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</td>
                                 <td>
@@ -217,9 +246,20 @@
                                     </span>
                                 </td>
                                 <td>
+                                    {% if pedido.total_reportes > 0 %}
+                                        <a href="{% url 'pedidos_ver_reporte' pedido.id %}" class="report-badge report-yes" title="Ver reporte">
+                                            <i class="fas fa-flag"></i>
+                                        </a>
+                                    {% else %}
+                                        <span class="report-badge report-no" title="Sin reporte">
+                                            <i class="fas fa-flag"></i>
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
                                     <div class="actions">
-                                        {% if pedido.estado == 'enviado' %}
-                                            <span style="color: #6c757d; font-size: 13px; font-weight: 600;">Enviado (bloqueado)</span>
+                                        {% if pedido.estado == 'entregado' or pedido.estado == 'cancelado' %}
+                                            <span style="color: #6c757d; font-size: 13px; font-weight: 600;">Finalizado (bloqueado)</span>
                                         {% else %}
                                             <a href="{% url 'pedidos_cambiar_estado' pedido.id %}" class="btn-edit">
                                                 <i class="fas fa-edit"></i> Cambiar Estado

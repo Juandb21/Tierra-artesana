@@ -1,0 +1,167 @@
+{% extends "tienda/base.html" %}
+
+{% block title %}Reporte del Pedido - Tierra Artesana{% endblock %}
+
+{% block extra_styles %}
+    <style>
+        .admin-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .pedido-meta {
+            background: white;
+            padding: 18px;
+            border-radius: 8px;
+            border-left: 4px solid #C85A17;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            color: #444;
+        }
+
+        .reporte-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 18px;
+            border: 1px solid #eee;
+        }
+
+        .reporte-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .reporte-fecha {
+            color: #777;
+            font-size: 13px;
+        }
+
+        .estado-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .estado-nuevo {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .estado-en_revision {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .estado-resuelto {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .reporte-descripcion {
+            color: #333;
+            margin-bottom: 12px;
+            white-space: pre-line;
+        }
+
+        .reporte-imagen img {
+            max-width: 100%;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .respuesta-admin {
+            margin-top: 14px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-left: 3px solid #C85A17;
+            border-radius: 4px;
+        }
+
+        .respuesta-admin h4 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .respuesta-admin p {
+            margin: 0;
+            color: #555;
+            white-space: pre-line;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="admin-container">
+        <a href="{% url 'pedidos_lista' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
+
+        <div class="page-header">
+            <h1><i class="fas fa-flag"></i> Reporte del Pedido</h1>
+        </div>
+
+        <div class="pedido-meta">
+            <strong>Pedido:</strong> #{{ pedido.numero_pedido }}<br>
+            <strong>Cliente:</strong> {{ pedido.cliente.user.get_full_name }}<br>
+            <strong>Telefono:</strong> {{ pedido.cliente.telefono|default:'No registrado' }}<br>
+            <strong>Estado del pedido:</strong> {{ pedido.get_estado_display }}
+        </div>
+
+        {% for reporte in reportes %}
+            <div class="reporte-card">
+                <div class="reporte-header">
+                    <span class="reporte-fecha">{{ reporte.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                    <span class="estado-badge estado-{{ reporte.estado }}">{{ reporte.get_estado_display }}</span>
+                </div>
+
+                <div class="reporte-descripcion">{{ reporte.descripcion }}</div>
+
+                {% if reporte.imagen %}
+                    <div class="reporte-imagen">
+                        <img src="{{ reporte.imagen.url }}" alt="Imagen del reporte">
+                    </div>
+                {% endif %}
+
+                {% if reporte.respuesta_admin %}
+                    <div class="respuesta-admin">
+                        <h4>Respuesta administrativa</h4>
+                        <p>{{ reporte.respuesta_admin }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
